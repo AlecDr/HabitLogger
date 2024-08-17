@@ -4,9 +4,9 @@ namespace HabitLogger.Helpers;
 
 internal abstract class ConsoleHelper
 {
-    internal static string ShowMainMenu()
+    internal static string ShowMainMenu(string username)
     {
-        ShowMessage("HabitLogger - [underline blue]Main Menu[/]", true, true, false);
+        ShowMessage($"HabitLogger - [blue] {username} [/] - [underline blue]Main Menu[/]", true, true, false);
         ShowMessage("");
         return GetChoice(HabitsLoggerHelper.GetMenuChoices(), "Choose an option bellow");
     }

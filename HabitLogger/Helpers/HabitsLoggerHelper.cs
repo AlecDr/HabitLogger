@@ -15,13 +15,12 @@ internal class HabitsLoggerHelper
 
     private string GetOption()
     {
-        string option = ConsoleHelper.ShowMainMenu();
+        string option = ConsoleHelper.ShowMainMenu(CurrentUser!);
 
         while (option == null || option.Trim() == "")
         {
             ConsoleHelper.ClearWindow();
-            ConsoleHelper.ClearWindow();
-            option = ConsoleHelper.ShowMainMenu();
+            option = ConsoleHelper.ShowMainMenu(CurrentUser);
         }
 
         return option;
@@ -38,6 +37,7 @@ internal class HabitsLoggerHelper
 
     internal void AskName()
     {
+        ConsoleHelper.ClearWindow();
         string name = ConsoleHelper.GetText("What is your [blue]name[/]? ");
 
         CurrentUser = name;
@@ -57,6 +57,10 @@ internal class HabitsLoggerHelper
         {
             case '1':
                 CreateHabit();
+                break;
+            case '6':
+                AskName();
+                Run();
                 break;
 
             default:
