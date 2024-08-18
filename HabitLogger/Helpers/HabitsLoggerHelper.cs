@@ -1,4 +1,7 @@
-﻿namespace HabitLogger.Helpers;
+﻿using HabitLogger.Dtos;
+using Spectre.Console;
+
+namespace HabitLogger.Helpers;
 
 internal class HabitsLoggerHelper
 {
@@ -10,6 +13,7 @@ internal class HabitsLoggerHelper
 
         string option = GetOption();
 
+        DatabaseHelper.GetAllHabits();
         RouteToOption(option.ElementAt(0));
     }
 
@@ -48,7 +52,36 @@ internal class HabitsLoggerHelper
         ConsoleHelper.ShowMessage("HabitLogger - [underline blue]Create an habit[/]", true, true, false);
         ConsoleHelper.ShowMessage("");
 
-        ConsoleHelper.GetText("What's the habit name?");
+        string description = ConsoleHelper.GetText("What's the habit description?");
+
+        DatabaseHelper.StoreHabit(new HabitStoreDTO(CurrentUser!, description));
+        ConsoleHelper.ShowMessage("Habit stored successfully!");
+
+        ConsoleHelper.ShowMessage("Press enter to continue");
+        AnsiConsole.Console.Input.ReadKey(false);
+    }
+
+    internal void ListHabits()
+    {
+        List<HabitShowDTO> habits = DatabaseHelper.GetAllHabits();
+
+        if (habits.Count() > 0)
+        {
+            foreach (HabitShowDTO habit in habits)
+            {
+                ConsoleHelper.ShowMessage($"{habit.Username} - {habit.Description}");
+            }
+            ConsoleHelper.ShowMessage("Press enter to continue");
+            AnsiConsole.Console.Input.ReadKey(false);
+
+        }
+        else
+        {
+            ConsoleHelper.ShowMessage("No habits found.");
+            ConsoleHelper.ShowMessage("Press enter to continue");
+            AnsiConsole.Console.Input.ReadKey(false);
+        }
+
     }
 
     internal void RouteToOption(char option)
@@ -57,6 +90,11 @@ internal class HabitsLoggerHelper
         {
             case '1':
                 CreateHabit();
+                Run();
+                break;
+            case '2':
+                ListHabits();
+                Run();
                 break;
             case '6':
                 AskName();
