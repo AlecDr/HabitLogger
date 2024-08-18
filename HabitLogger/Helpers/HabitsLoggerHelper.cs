@@ -13,7 +13,6 @@ internal class HabitsLoggerHelper
 
         string option = GetOption();
 
-        DatabaseHelper.GetAllHabits();
         RouteToOption(option.ElementAt(0));
     }
 
@@ -54,22 +53,75 @@ internal class HabitsLoggerHelper
 
         string description = ConsoleHelper.GetText("What's the habit description?");
 
-        DatabaseHelper.StoreHabit(new HabitStoreDTO(CurrentUser!, description));
+        DatabaseHelper.StoreHabit(new HabitStoreDTO(description, CurrentUser!));
         ConsoleHelper.ShowMessage("Habit stored successfully!");
 
         ConsoleHelper.ShowMessage("Press enter to continue");
         AnsiConsole.Console.Input.ReadKey(false);
     }
 
+    internal void UpdateHabit()
+    {
+        ConsoleHelper.ShowMessage("HabitLogger - [underline blue]Update an habit[/]", true, true, false);
+        ConsoleHelper.ShowMessage("");
+
+        List<HabitShowDTO> habits = DatabaseHelper.GetAllHabits(CurrentUser!);
+
+        if (habits.Count <= 0)
+        {
+            ConsoleHelper.ShowMessage("No habits found for this user");
+            ConsoleHelper.ShowMessage("Press enter to continue");
+            AnsiConsole.Console.Input.ReadKey(false);
+        }
+        else
+        {
+
+            foreach (HabitShowDTO habit in habits)
+            {
+                PrintHabit(habit);
+            }
+
+            int.TryParse(ConsoleHelper.GetText("What's the habit ID?"), out int id);
+
+            if (habits.Where(habit => habit.Id == (id > 0 ? id : 0)).Count() > 0)
+            {
+
+                string description = ConsoleHelper.GetText("What's the habit new description?");
+
+                bool result = DatabaseHelper.UpdateHabit(new HabitUpdateDTO(id, description, CurrentUser!));
+
+                ConsoleHelper.ShowMessage(result ? "Habit updated successfully!" : "Something went wrong :(");
+                ConsoleHelper.ShowMessage("Press enter to continue");
+                AnsiConsole.Console.Input.ReadKey(false);
+            }
+            else
+            {
+                ConsoleHelper.ShowMessage("This habit could not be found!");
+                ConsoleHelper.ShowMessage("Press enter to continue");
+                AnsiConsole.Console.Input.ReadKey(false);
+
+            }
+        }
+
+    }
+
+    private void PrintHabit(HabitShowDTO habit)
+    {
+        ConsoleHelper.ShowMessage($"{habit.Id} - {habit.Username} - {habit.Description}");
+    }
+
     internal void ListHabits()
     {
-        List<HabitShowDTO> habits = DatabaseHelper.GetAllHabits();
+        ConsoleHelper.ShowMessage("HabitLogger - [underline blue]List of habits[/]", true, true, false);
+        ConsoleHelper.ShowMessage("");
+
+        List<HabitShowDTO> habits = DatabaseHelper.GetAllHabits(CurrentUser!);
 
         if (habits.Count() > 0)
         {
             foreach (HabitShowDTO habit in habits)
             {
-                ConsoleHelper.ShowMessage($"{habit.Username} - {habit.Description}");
+                PrintHabit(habit);
             }
             ConsoleHelper.ShowMessage("Press enter to continue");
             AnsiConsole.Console.Input.ReadKey(false);
@@ -94,6 +146,10 @@ internal class HabitsLoggerHelper
                 break;
             case '2':
                 ListHabits();
+                Run();
+                break;
+            case '3':
+                UpdateHabit();
                 Run();
                 break;
             case '6':

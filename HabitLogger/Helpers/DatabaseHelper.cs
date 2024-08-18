@@ -26,7 +26,7 @@ internal abstract class DatabaseHelper
 
     private static string GetDatabasePath()
     {
-        string projectFolder = "F:\\";
+        string projectFolder = Environment.CurrentDirectory;
         string databasePath = System.IO.Path.Combine(projectFolder, "habits.db");
 
         return databasePath;
@@ -56,28 +56,53 @@ internal abstract class DatabaseHelper
         sqliteConnection.Close();
     }
 
-    public static List<HabitShowDTO> GetAllHabits()
+    public static HabitShowDTO? FindHabit(int id, string username)
+    {
+        HabitShowDTO? habit = null;
+
+        using (SQLiteCommand command = CreateCommand())
+        {
+            sqliteConnection!.Open();
+
+            command.CommandText = "SELECT * FROM HABITS WHERE id = @id AND username = @username;";
+            command.Parameters.AddWithValue("id", id);
+            command.Parameters.AddWithValue("username", username);
+
+            using (SQLiteDataReader reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    habit = new HabitShowDTO(reader.GetInt32(0), reader.GetString(1), reader.GetString(2));
+                }
+            }
+
+
+            sqliteConnection!.Close();
+        }
+
+        return habit;
+    }
+
+    public static List<HabitShowDTO> GetAllHabits(string username)
     {
         List<HabitShowDTO> habits = [];
 
         using (SQLiteCommand command = CreateCommand())
         {
             sqliteConnection!.Open();
-            command.CommandText = "SELECT * FROM HABITS;";
+            command.CommandText = "SELECT * FROM HABITS WHERE username = @username;";
+            command.Parameters.AddWithValue("username", username);
+
             using (SQLiteDataReader reader = command.ExecuteReader())
             {
                 while (reader.Read())
                 {
-                    reader.GetInt32(0);
-                    reader.GetString(1);
-                    reader.GetString(2);
                     habits.Add(new HabitShowDTO(reader.GetInt32(0), reader.GetString(1), reader.GetString(2)));
                 }
             }
 
 
             sqliteConnection!.Close();
-
         }
 
         return habits;
@@ -98,5 +123,59 @@ internal abstract class DatabaseHelper
         }
 
         sqliteConnection.Close();
+    }
+
+    public static bool UpdateHabit(HabitUpdateDTO habitUpdateDTO)
+    {
+        HabitShowDTO? habit = FindHabit(habitUpdateDTO.Id, habitUpdateDTO.Username);
+
+        if (habit != null)
+        {
+            sqliteConnection!.Open();
+
+            using (SQLiteCommand command = CreateCommand())
+            {
+                command.CommandText = "UPDATE HABITS SET description = @description WHERE id = @id and username = @username;";
+
+                command.Parameters.AddWithValue("id", habitUpdateDTO.Id);
+                command.Parameters.AddWithValue("description", habitUpdateDTO.Description);
+                command.Parameters.AddWithValue("username", habitUpdateDTO.Username);
+
+                command.ExecuteNonQuery();
+            }
+
+            sqliteConnection.Close();
+
+            return true;
+        }
+
+        return false;
+    }
+
+    public static bool DeleteHabit(HabitUpdateDTO habitUpdateDTO)
+    {
+        HabitShowDTO? habit = FindHabit(habitUpdateDTO.Id, habitUpdateDTO.Username);
+
+        if (habit != null)
+        {
+
+            sqliteConnection!.Open();
+
+            using (SQLiteCommand command = CreateCommand())
+            {
+                command.CommandText = "DELETE FROM HABITS WHERE id = @id and username = @username;";
+
+                command.Parameters.AddWithValue("id", habitUpdateDTO.Description);
+                command.Parameters.AddWithValue("username", habitUpdateDTO.Username);
+
+                command.ExecuteNonQuery();
+            }
+
+            sqliteConnection.Close();
+
+            return true;
+        }
+
+        return false;
     }
 }
