@@ -1,4 +1,5 @@
 ﻿using Spectre.Console;
+using System.Globalization;
 
 namespace HabitLogger.Helpers;
 
@@ -71,6 +72,7 @@ internal abstract class ConsoleHelper
         List<string> choices,
         string title,
         int pageSize = 10,
+
         string moreChoicesText = "[grey](Move up and down to reveal more options)[/]")
     {
         return AnsiConsole.Prompt(
@@ -85,5 +87,30 @@ internal abstract class ConsoleHelper
     {
         ConsoleHelper.ShowMessage("Press enter to continue");
         AnsiConsole.Console.Input.ReadKey(false);
+    }
+
+    internal static DateTime GetDateTime()
+    {
+        TextPrompt<string> dateTimePrompt = new TextPrompt<string>("Enter a date and time [grey](yyyy-MM-dd HH:mm:ss)[/]:")
+            .Validate(input =>
+            {
+                // Attempt to parse the input as a date and time in the specified format
+                bool isValid = DateTime.TryParseExact(input,
+                                                      "yyyy-MM-dd HH:mm:ss",
+                                                      CultureInfo.InvariantCulture,
+                                                      DateTimeStyles.None,
+                                                      out _);
+                return isValid ? ValidationResult.Success() : ValidationResult.Error("[red]Invalid date and time format.[/]");
+            });
+
+        // Prompt the user for input
+        string dateTimeInput = AnsiConsole.Prompt(dateTimePrompt);
+
+        // Parse the valid input to a DateTime object
+        DateTime dateTime = DateTime.ParseExact(dateTimeInput,
+                                                "yyyy-MM-dd HH:mm:ss",
+                                                CultureInfo.InvariantCulture);
+
+        return dateTime;
     }
 }

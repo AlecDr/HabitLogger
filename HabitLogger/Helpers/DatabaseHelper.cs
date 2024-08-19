@@ -1,4 +1,5 @@
 ﻿using System.Data.SQLite;
+using System.Diagnostics;
 
 namespace HabitLogger.Helpers;
 
@@ -29,6 +30,7 @@ internal abstract class DatabaseHelper
         string projectFolder = Environment.CurrentDirectory;
         string databasePath = System.IO.Path.Combine(projectFolder, "habits.db");
 
+        Debug.Print(databasePath);
         return databasePath;
     }
 

@@ -2,12 +2,12 @@
 
 internal class HabitOccurrenceStoreDTO
 {
-    internal string Description { get; }
-    internal string Username { get; }
+    internal int HabitId { get; }
+    internal DateTime Datetime { get; }
 
-    internal HabitOccurrenceStoreDTO(string description, string username)
+    internal HabitOccurrenceStoreDTO(int habitId, DateTime datetime)
     {
-        Description = description;
-        Username = username;
+        HabitId = habitId;
+        Datetime = datetime;
     }
 }

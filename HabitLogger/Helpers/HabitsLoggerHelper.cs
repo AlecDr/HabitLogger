@@ -1,5 +1,6 @@
 ﻿using HabitLogger.Daos;
 using HabitLogger.Dtos.Habit;
+using HabitLogger.Dtos.HabitOccurrence;
 
 namespace HabitLogger.Helpers;
 
@@ -64,7 +65,7 @@ internal class HabitsLoggerHelper
         ConsoleHelper.ShowMessage("HabitLogger - [underline blue]Update an habit[/]", true, true, false);
         ConsoleHelper.ShowMessage("");
 
-        int? id = ShowHabitsAndAskForId();
+        int? id = ShowHabitsAndAskForId("Whats the habit ID to update?");
 
         if (id.HasValue)
         {
@@ -87,13 +88,36 @@ internal class HabitsLoggerHelper
         ConsoleHelper.ShowMessage("HabitLogger - [underline blue]Delete an habit[/]", true, true, false);
         ConsoleHelper.ShowMessage("");
 
-        int? id = ShowHabitsAndAskForId();
+        int? id = ShowHabitsAndAskForId("Whats the habit ID to delete?");
 
         if (id.HasValue)
         {
             bool result = HabitsDao.DeleteHabit(id.Value, CurrentUser!);
 
             ConsoleHelper.ShowMessage(result ? "Habit deleted successfully!" : "Something went wrong :(");
+            ConsoleHelper.PressEnterToContinue();
+        }
+        else
+        {
+            ConsoleHelper.ShowMessage("This habit could not be found!");
+            ConsoleHelper.PressEnterToContinue();
+        }
+    }
+
+    private void InformHabit()
+    {
+        ConsoleHelper.ShowMessage("HabitLogger - [underline blue]Inform habit[/]", true, true, false);
+        ConsoleHelper.ShowMessage("");
+
+        int? id = ShowHabitsAndAskForId("Whats the habit ID to inform?");
+
+        if (id.HasValue)
+        {
+            DateTime dateTime = ConsoleHelper.GetDateTime();
+
+            HabitsOccurrencesDao.StoreOccurrence(new HabitOccurrenceStoreDTO(id.Value, dateTime));
+
+            ConsoleHelper.ShowMessage("Habit informed successfully!");
             ConsoleHelper.PressEnterToContinue();
         }
         else
@@ -132,7 +156,7 @@ internal class HabitsLoggerHelper
 
     }
 
-    private int? ShowHabitsAndAskForId()
+    private int? ShowHabitsAndAskForId(string message)
     {
         List<HabitShowDTO> habits = HabitsDao.GetAllHabits(CurrentUser!);
 
@@ -147,7 +171,7 @@ internal class HabitsLoggerHelper
                 PrintHabit(habit);
             }
 
-            int.TryParse(ConsoleHelper.GetText("Type the habit ID to delete: "), out int id);
+            int.TryParse(ConsoleHelper.GetText(message), out int id);
 
             return habits.Where(habit => habit.Id == (id > 0 ? id : 0)).Count() > 0 ? id : null;
         }
@@ -171,6 +195,10 @@ internal class HabitsLoggerHelper
                 break;
             case '4':
                 DeleteHabit();
+                Run();
+                break;
+            case '5':
+                InformHabit();
                 Run();
                 break;
             case '6':
