@@ -7,5 +7,4 @@ public class Program
         HabitsLoggerHelper habitsLoggerHelper = new HabitsLoggerHelper();
         habitsLoggerHelper.Run();
     }
-
 }

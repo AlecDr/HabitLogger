@@ -1,12 +1,12 @@
-﻿namespace HabitLogger.Dtos;
+﻿namespace HabitLogger.Dtos.HabitOccurrence;
 
-internal class HabitShowDTO
+internal class HabitOccurrenceShowDTO
 {
     internal int Id { get; }
     internal string Description { get; }
     internal string Username { get; }
 
-    internal HabitShowDTO(int id, string description, string username)
+    internal HabitOccurrenceShowDTO(int id, string description, string username)
     {
         Id = id;
         Description = description;

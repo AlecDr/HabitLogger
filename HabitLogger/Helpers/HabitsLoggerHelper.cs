@@ -1,5 +1,5 @@
-﻿using HabitLogger.Dtos;
-using Spectre.Console;
+﻿using HabitLogger.Daos;
+using HabitLogger.Dtos.Habit;
 
 namespace HabitLogger.Helpers;
 
@@ -29,7 +29,7 @@ internal class HabitsLoggerHelper
         return option;
     }
 
-    internal void CheckUser()
+    private void CheckUser()
     {
         if (CurrentUser == null)
         {
@@ -38,7 +38,7 @@ internal class HabitsLoggerHelper
         }
     }
 
-    internal void AskName()
+    private void AskName()
     {
         ConsoleHelper.ClearWindow();
         string name = ConsoleHelper.GetText("What is your [blue]name[/]? ");
@@ -46,76 +46,74 @@ internal class HabitsLoggerHelper
         CurrentUser = name;
     }
 
-    internal void CreateHabit()
+    private void CreateHabit()
     {
         ConsoleHelper.ShowMessage("HabitLogger - [underline blue]Create an habit[/]", true, true, false);
         ConsoleHelper.ShowMessage("");
 
         string description = ConsoleHelper.GetText("What's the habit description?");
 
-        DatabaseHelper.StoreHabit(new HabitStoreDTO(description, CurrentUser!));
+        HabitsDao.StoreHabit(new HabitStoreDTO(description, CurrentUser!));
         ConsoleHelper.ShowMessage("Habit stored successfully!");
 
-        ConsoleHelper.ShowMessage("Press enter to continue");
-        AnsiConsole.Console.Input.ReadKey(false);
+        ConsoleHelper.PressEnterToContinue();
     }
 
-    internal void UpdateHabit()
+    private void UpdateHabit()
     {
         ConsoleHelper.ShowMessage("HabitLogger - [underline blue]Update an habit[/]", true, true, false);
         ConsoleHelper.ShowMessage("");
 
-        List<HabitShowDTO> habits = DatabaseHelper.GetAllHabits(CurrentUser!);
+        int? id = ShowHabitsAndAskForId();
 
-        if (habits.Count <= 0)
+        if (id.HasValue)
         {
-            ConsoleHelper.ShowMessage("No habits found for this user");
-            ConsoleHelper.ShowMessage("Press enter to continue");
-            AnsiConsole.Console.Input.ReadKey(false);
+            string description = ConsoleHelper.GetText("What's the habit new description?");
+
+            bool result = HabitsDao.UpdateHabit(new HabitUpdateDTO(id.Value, description, CurrentUser!));
+
+            ConsoleHelper.ShowMessage(result ? "Habit updated successfully!" : "Something went wrong :(");
+            ConsoleHelper.PressEnterToContinue();
         }
         else
         {
-
-            foreach (HabitShowDTO habit in habits)
-            {
-                PrintHabit(habit);
-            }
-
-            int.TryParse(ConsoleHelper.GetText("What's the habit ID?"), out int id);
-
-            if (habits.Where(habit => habit.Id == (id > 0 ? id : 0)).Count() > 0)
-            {
-
-                string description = ConsoleHelper.GetText("What's the habit new description?");
-
-                bool result = DatabaseHelper.UpdateHabit(new HabitUpdateDTO(id, description, CurrentUser!));
-
-                ConsoleHelper.ShowMessage(result ? "Habit updated successfully!" : "Something went wrong :(");
-                ConsoleHelper.ShowMessage("Press enter to continue");
-                AnsiConsole.Console.Input.ReadKey(false);
-            }
-            else
-            {
-                ConsoleHelper.ShowMessage("This habit could not be found!");
-                ConsoleHelper.ShowMessage("Press enter to continue");
-                AnsiConsole.Console.Input.ReadKey(false);
-
-            }
+            ConsoleHelper.ShowMessage("This habit could not be found!");
+            ConsoleHelper.PressEnterToContinue();
         }
+    }
 
+    private void DeleteHabit()
+    {
+        ConsoleHelper.ShowMessage("HabitLogger - [underline blue]Delete an habit[/]", true, true, false);
+        ConsoleHelper.ShowMessage("");
+
+        int? id = ShowHabitsAndAskForId();
+
+        if (id.HasValue)
+        {
+            bool result = HabitsDao.DeleteHabit(id.Value, CurrentUser!);
+
+            ConsoleHelper.ShowMessage(result ? "Habit deleted successfully!" : "Something went wrong :(");
+            ConsoleHelper.PressEnterToContinue();
+        }
+        else
+        {
+            ConsoleHelper.ShowMessage("This habit could not be found!");
+            ConsoleHelper.PressEnterToContinue();
+        }
     }
 
     private void PrintHabit(HabitShowDTO habit)
     {
-        ConsoleHelper.ShowMessage($"{habit.Id} - {habit.Username} - {habit.Description}");
+        ConsoleHelper.ShowMessage($"{habit.Id} - {habit.Description}");
     }
 
-    internal void ListHabits()
+    private void ListHabits()
     {
         ConsoleHelper.ShowMessage("HabitLogger - [underline blue]List of habits[/]", true, true, false);
         ConsoleHelper.ShowMessage("");
 
-        List<HabitShowDTO> habits = DatabaseHelper.GetAllHabits(CurrentUser!);
+        List<HabitShowDTO> habits = HabitsDao.GetAllHabits(CurrentUser!);
 
         if (habits.Count() > 0)
         {
@@ -123,20 +121,39 @@ internal class HabitsLoggerHelper
             {
                 PrintHabit(habit);
             }
-            ConsoleHelper.ShowMessage("Press enter to continue");
-            AnsiConsole.Console.Input.ReadKey(false);
 
+            ConsoleHelper.PressEnterToContinue();
         }
         else
         {
             ConsoleHelper.ShowMessage("No habits found.");
-            ConsoleHelper.ShowMessage("Press enter to continue");
-            AnsiConsole.Console.Input.ReadKey(false);
+            ConsoleHelper.PressEnterToContinue();
         }
 
     }
 
-    internal void RouteToOption(char option)
+    private int? ShowHabitsAndAskForId()
+    {
+        List<HabitShowDTO> habits = HabitsDao.GetAllHabits(CurrentUser!);
+
+        if (habits.Count <= 0)
+        {
+            return null;
+        }
+        else
+        {
+            foreach (HabitShowDTO habit in habits)
+            {
+                PrintHabit(habit);
+            }
+
+            int.TryParse(ConsoleHelper.GetText("Type the habit ID to delete: "), out int id);
+
+            return habits.Where(habit => habit.Id == (id > 0 ? id : 0)).Count() > 0 ? id : null;
+        }
+    }
+
+    private void RouteToOption(char option)
     {
         switch (option)
         {
@@ -150,6 +167,10 @@ internal class HabitsLoggerHelper
                 break;
             case '3':
                 UpdateHabit();
+                Run();
+                break;
+            case '4':
+                DeleteHabit();
                 Run();
                 break;
             case '6':

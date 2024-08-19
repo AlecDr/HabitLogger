@@ -80,4 +80,10 @@ internal abstract class ConsoleHelper
                 .MoreChoicesText(moreChoicesText)
                 .AddChoices(choices));
     }
+
+    internal static void PressEnterToContinue()
+    {
+        ConsoleHelper.ShowMessage("Press enter to continue");
+        AnsiConsole.Console.Input.ReadKey(false);
+    }
 }

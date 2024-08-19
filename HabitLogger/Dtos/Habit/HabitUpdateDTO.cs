@@ -1,4 +1,4 @@
-﻿namespace HabitLogger.Dtos;
+﻿namespace HabitLogger.Dtos.Habit;
 
 internal class HabitUpdateDTO : HabitStoreDTO
 {
