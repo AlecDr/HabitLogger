@@ -6,6 +6,7 @@ namespace HabitLogger.Helpers;
 internal abstract class DatabaseHelper
 {
     static SQLiteConnection? _sqliteConnection;
+
     internal static SQLiteConnection? SqliteConnection { get { return GetConnection(); } private set { SqliteConnection = value; } }
 
     private static SQLiteConnection GetConnection()

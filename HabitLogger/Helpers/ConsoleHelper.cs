@@ -63,9 +63,49 @@ internal abstract class ConsoleHelper
 
     }
 
-    internal static string GetText(string message)
+    internal static string? GetText(string message)
     {
-        return AnsiConsole.Ask<string>(message);
+        //return AnsiConsole.Ask<string>(message);
+
+        ConsoleKey key;
+        string input = string.Empty;
+
+        // Inform the user about cancellation option
+        AnsiConsole.MarkupLine("[grey](Press Esc to cancel)[/]");
+
+        // Begin the prompt
+        AnsiConsole.Markup($"[bold]{message}[/] ");
+
+        // Read user input, one key at a time
+        do
+        {
+            var keyInfo = Console.ReadKey(intercept: true);
+            key = keyInfo.Key;
+
+            // Handle Escape key
+            if (key == ConsoleKey.Escape)
+            {
+                AnsiConsole.MarkupLine("\n[red]Input cancelled.[/]");
+                return null;  // Or throw an exception if you want to handle it elsewhere
+            }
+
+            // Handle Backspace key
+            if (key == ConsoleKey.Backspace && input.Length > 0)
+            {
+                input = input[..^1];
+                Console.Write("\b \b");  // Erase the last character on the console
+            }
+            // Handle standard keys
+            else if (key != ConsoleKey.Enter && key != ConsoleKey.Backspace)
+            {
+                input += keyInfo.KeyChar;
+                Console.Write(keyInfo.KeyChar);  // Show the character
+            }
+
+        } while (key != ConsoleKey.Enter);
+
+        AnsiConsole.WriteLine(); // Move to the next line after Enter is pressed
+        return input;
     }
 
     internal static string GetChoice(
@@ -83,15 +123,17 @@ internal abstract class ConsoleHelper
                 .AddChoices(choices));
     }
 
-    internal static void PressEnterToContinue()
+    internal static void PressAnyKeyToContinue()
     {
-        ConsoleHelper.ShowMessage("Press enter to continue");
+        ShowMessage("");
+        ShowMessage("Press any key to continue");
         AnsiConsole.Console.Input.ReadKey(false);
     }
 
     internal static DateTime GetDateTime()
     {
         TextPrompt<string> dateTimePrompt = new TextPrompt<string>("Enter a date and time [grey](yyyy-MM-dd HH:mm:ss)[/]:")
+            .DefaultValue(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"))
             .Validate(input =>
             {
                 // Attempt to parse the input as a date and time in the specified format
@@ -112,5 +154,11 @@ internal abstract class ConsoleHelper
                                                 CultureInfo.InvariantCulture);
 
         return dateTime;
+    }
+
+    internal static void ShowTitle(string message)
+    {
+        ShowMessage($"HabitLogger - [underline blue]{message}[/]", true, true, false);
+        ShowMessage("");
     }
 }

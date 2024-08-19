@@ -10,7 +10,10 @@ internal class HabitsLoggerHelper
 
     internal void Run()
     {
-        CheckUser();
+        while (CurrentUser == null)
+        {
+            CheckUser();
+        }
 
         string option = GetOption();
 
@@ -41,29 +44,31 @@ internal class HabitsLoggerHelper
 
     private void AskName()
     {
-        ConsoleHelper.ClearWindow();
-        string name = ConsoleHelper.GetText("What is your [blue]name[/]? ");
+        ConsoleHelper.ShowTitle("User Selection");
 
-        CurrentUser = name;
+        string? name = ConsoleHelper.GetText("What is your [blue]name[/]? ");
+
+        if (name != null && name.Trim().Length > 0)
+        {
+            CurrentUser = name;
+        }
     }
 
     private void CreateHabit()
     {
-        ConsoleHelper.ShowMessage("HabitLogger - [underline blue]Create an habit[/]", true, true, false);
-        ConsoleHelper.ShowMessage("");
+        ConsoleHelper.ShowTitle("Create an habit");
 
         string description = ConsoleHelper.GetText("What's the habit description?");
 
         HabitsDao.StoreHabit(new HabitStoreDTO(description, CurrentUser!));
         ConsoleHelper.ShowMessage("Habit stored successfully!");
 
-        ConsoleHelper.PressEnterToContinue();
+        ConsoleHelper.PressAnyKeyToContinue();
     }
 
     private void UpdateHabit()
     {
-        ConsoleHelper.ShowMessage("HabitLogger - [underline blue]Update an habit[/]", true, true, false);
-        ConsoleHelper.ShowMessage("");
+        ConsoleHelper.ShowTitle("Update an habit");
 
         int? id = ShowHabitsAndAskForId("Whats the habit ID to update?");
 
@@ -74,19 +79,18 @@ internal class HabitsLoggerHelper
             bool result = HabitsDao.UpdateHabit(new HabitUpdateDTO(id.Value, description, CurrentUser!));
 
             ConsoleHelper.ShowMessage(result ? "Habit updated successfully!" : "Something went wrong :(");
-            ConsoleHelper.PressEnterToContinue();
+            ConsoleHelper.PressAnyKeyToContinue();
         }
         else
         {
             ConsoleHelper.ShowMessage("This habit could not be found!");
-            ConsoleHelper.PressEnterToContinue();
+            ConsoleHelper.PressAnyKeyToContinue();
         }
     }
 
     private void DeleteHabit()
     {
-        ConsoleHelper.ShowMessage("HabitLogger - [underline blue]Delete an habit[/]", true, true, false);
-        ConsoleHelper.ShowMessage("");
+        ConsoleHelper.ShowTitle("Delete an habit");
 
         int? id = ShowHabitsAndAskForId("Whats the habit ID to delete?");
 
@@ -95,19 +99,18 @@ internal class HabitsLoggerHelper
             bool result = HabitsDao.DeleteHabit(id.Value, CurrentUser!);
 
             ConsoleHelper.ShowMessage(result ? "Habit deleted successfully!" : "Something went wrong :(");
-            ConsoleHelper.PressEnterToContinue();
+            ConsoleHelper.PressAnyKeyToContinue();
         }
         else
         {
             ConsoleHelper.ShowMessage("This habit could not be found!");
-            ConsoleHelper.PressEnterToContinue();
+            ConsoleHelper.PressAnyKeyToContinue();
         }
     }
 
     private void InformHabit()
     {
-        ConsoleHelper.ShowMessage("HabitLogger - [underline blue]Inform habit[/]", true, true, false);
-        ConsoleHelper.ShowMessage("");
+        ConsoleHelper.ShowTitle("Inform habit");
 
         int? id = ShowHabitsAndAskForId("Whats the habit ID to inform?");
 
@@ -118,12 +121,12 @@ internal class HabitsLoggerHelper
             HabitsOccurrencesDao.StoreOccurrence(new HabitOccurrenceStoreDTO(id.Value, dateTime));
 
             ConsoleHelper.ShowMessage("Habit informed successfully!");
-            ConsoleHelper.PressEnterToContinue();
+            ConsoleHelper.PressAnyKeyToContinue();
         }
         else
         {
-            ConsoleHelper.ShowMessage("This habit could not be found!");
-            ConsoleHelper.PressEnterToContinue();
+            ConsoleHelper.ShowMessage("No habits found!");
+            ConsoleHelper.PressAnyKeyToContinue();
         }
     }
 
@@ -134,8 +137,7 @@ internal class HabitsLoggerHelper
 
     private void ListHabits()
     {
-        ConsoleHelper.ShowMessage("HabitLogger - [underline blue]List of habits[/]", true, true, false);
-        ConsoleHelper.ShowMessage("");
+        ConsoleHelper.ShowTitle("List of habits");
 
         List<HabitShowDTO> habits = HabitsDao.GetAllHabits(CurrentUser!);
 
@@ -146,12 +148,12 @@ internal class HabitsLoggerHelper
                 PrintHabit(habit);
             }
 
-            ConsoleHelper.PressEnterToContinue();
+            ConsoleHelper.PressAnyKeyToContinue();
         }
         else
         {
             ConsoleHelper.ShowMessage("No habits found.");
-            ConsoleHelper.PressEnterToContinue();
+            ConsoleHelper.PressAnyKeyToContinue();
         }
 
     }
@@ -170,6 +172,8 @@ internal class HabitsLoggerHelper
             {
                 PrintHabit(habit);
             }
+
+            ConsoleHelper.ShowMessage("");
 
             int.TryParse(ConsoleHelper.GetText(message), out int id);
 
