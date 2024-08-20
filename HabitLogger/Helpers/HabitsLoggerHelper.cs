@@ -96,6 +96,9 @@ internal class HabitsLoggerHelper
 
         if (id.HasValue)
         {
+            // we must delete this habit occurrences before deleting the habit
+            HabitsOccurrencesDao.DeleteOccurrencesFromHabit(id.Value);
+
             bool result = HabitsDao.DeleteHabit(id.Value, CurrentUser!);
 
             ConsoleHelper.ShowMessage(result ? "Habit deleted successfully!" : "Something went wrong :(");
@@ -135,6 +138,11 @@ internal class HabitsLoggerHelper
         ConsoleHelper.ShowMessage($"{habit.Id} - {habit.Description}");
     }
 
+    private void PrintOccurrence(HabitOccurrenceShowDTO occurrence)
+    {
+        ConsoleHelper.ShowMessage($"{occurrence.Id} - {occurrence.Description} - {occurrence.Datetime}");
+    }
+
     private void ListHabits()
     {
         ConsoleHelper.ShowTitle("List of habits");
@@ -153,6 +161,29 @@ internal class HabitsLoggerHelper
         else
         {
             ConsoleHelper.ShowMessage("No habits found.");
+            ConsoleHelper.PressAnyKeyToContinue();
+        }
+
+    }
+
+    private void ListOccurrences()
+    {
+        ConsoleHelper.ShowTitle("List of occurrences");
+
+        List<HabitOccurrenceShowDTO> occurrences = HabitsOccurrencesDao.GetAllOccurrences(CurrentUser!);
+
+        if (occurrences.Count() > 0)
+        {
+            foreach (HabitOccurrenceShowDTO occurrence in occurrences)
+            {
+                PrintOccurrence(occurrence);
+            }
+
+            ConsoleHelper.PressAnyKeyToContinue();
+        }
+        else
+        {
+            ConsoleHelper.ShowMessage("No ocurrences found.");
             ConsoleHelper.PressAnyKeyToContinue();
         }
 
@@ -209,6 +240,10 @@ internal class HabitsLoggerHelper
                 AskName();
                 Run();
                 break;
+            case '7':
+                ListOccurrences();
+                Run();
+                break;
 
             default:
                 Run();
@@ -225,6 +260,7 @@ internal class HabitsLoggerHelper
             "4 - [blue]D[/]elete habit",
             "5 - [blue]I[/]nform habit",
             "6 - [blue]A[/]lter username",
+            "7 - [blue]S[/]how habits occurrences"
             ];
     }
 }

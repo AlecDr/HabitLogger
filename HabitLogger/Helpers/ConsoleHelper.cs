@@ -112,7 +112,6 @@ internal abstract class ConsoleHelper
         List<string> choices,
         string title,
         int pageSize = 10,
-
         string moreChoicesText = "[grey](Move up and down to reveal more options)[/]")
     {
         return AnsiConsole.Prompt(

@@ -4,12 +4,12 @@ internal class HabitOccurrenceShowDTO
 {
     internal int Id { get; }
     internal string Description { get; }
-    internal string Username { get; }
+    internal string Datetime { get; }
 
-    internal HabitOccurrenceShowDTO(int id, string description, string username)
+    internal HabitOccurrenceShowDTO(int id, string description, string datetime)
     {
         Id = id;
         Description = description;
-        Username = username;
+        Datetime = datetime;
     }
 }
